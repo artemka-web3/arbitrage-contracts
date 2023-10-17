@@ -2,13 +2,6 @@
 pragma solidity ^0.8.13;
 
 
-// USDC - 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913
-// SCALE - 0x54016a4848a38f257b6e96331f7404073fd9c32c
-// PANTHEON - 0x993cd9c0512cfe335bc7eF0534236Ba760ea7526
-// PANTHEON/USDC - 0x36e05b7ad2f93816068c831415560ae872024f27
-// PANTHEON/SCALE - 0x1948bd09a8777023d4f15e29880930ed5ba0daf2
-// ScaleRouter contract address - 0x2f87bf58d5a9b2efade55cdbd46153a0902be6fa
-// BASE NODE - https://base-mainnet.g.alchemy.com/v2/hdPovnYpO6ln8pEpaZOtPBI4i3XwqmMp
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 
@@ -43,6 +36,15 @@ interface IRouter {
     function addLiquidity( address tokenA, address tokenB, bool stable, uint amountADesired, uint amountBDesired, uint amountAMin, uint amountBMin, address to, uint deadline) external returns (uint, uint, uint);
 }
 
+interface IPantheon {
+    function mint(address receiver) external payable;
+    function redeem(uint256 pantheon) external;
+    function getMintPantheon(uint256 amount) external view returns (uint256);
+    function getRedeemPantheon(uint256 amount) external view returns (uint256);
+    function getTotalEth() external view returns (uint256);
+    function totalSupply() external view returns (uint256);
+}
+
 
 
 contract ArbitrageBot is Ownable {
@@ -51,6 +53,7 @@ contract ArbitrageBot is Ownable {
     address public scaleAddress = 0x54016a4848a38f257B6E96331F7404073Fd9c32C;
     address public pantheonAddress = 0x993cd9c0512cfe335bc7eF0534236Ba760ea7526;
     address public _owner;
+    mapping (address => uint256) public tokens;
 
     constructor(address initialOwner) Ownable(initialOwner) {
         _owner = initialOwner;
@@ -76,7 +79,7 @@ contract ArbitrageBot is Ownable {
         return amountPantheonOut;
     }
 
-    function swap(address _tokenIn,  address _tokenOut, uint256 _amount, uint256 _amountOutMin) private{
+    function swap(address _tokenIn,  address _tokenOut, uint256 _amount, uint256 _amountOutMin) private {
 		IERC20(_tokenIn).approve(routerAddress, _amount);
 		uint deadline = block.timestamp + 300;
 		uint256 [] memory amounts = IRouter(routerAddress).swapExactTokensForTokensSimple(_amount, _amountOutMin, _tokenIn, _tokenOut, false, address(this), deadline);
@@ -99,5 +102,44 @@ contract ArbitrageBot is Ownable {
         swap(pantheonAddress, scaleAddress, pantheonTradeableAmount, _amountOutMinDec18);
         uint256 scaleBalance = IERC20(scaleAddress).balanceOf(address(this));
     }
+
+    // Arbitrage the Pantheon - USDC pool with the Pantheon contract (mint and redeem),
+    // example: 
+    // if the Pantheon price in the USDC liquidity pool goes above mint price, 
+    // the Bot should Mint Pantheon and sell It in the Liquidity Pool until it reaches the Mint price.
+
+    function ProfitFromMint(uint256 ethers_amount, uint256 pantheonAmount) public {
+        // 1% from ETH balance
+        IPantheon(pantheonAddress).mint{value: ethers_amount}(address(this));
+        swap(pantheonAddress, usdcAddress, pantheonAmount, 0);
+    }
+
+    function ProfitFromRedeem(uint256 usdcAmount, uint256 pantheonAmount) public {
+        swap(usdcAddress, pantheonAddress, usdcAmount, 0);
+        IPantheon(pantheonAddress).redeem(pantheonAmount);
+    }
+
+    receive() external payable {}
+
+    function depositTokens(address token, uint256 amount) external onlyOwner {
+        require(token != address(0), "Invalid token address");
+        require(amount > 0, "Amount must be greater than zero");
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        tokens[token] += amount;        
+    }
+
+    function withdrawTokens(address token, uint256 amount) external onlyOwner{
+        require(token != address(0), "Invalid token address");
+        require(amount > 0, "Amount must be greater than zero");
+        require(tokens[token] > amount, "Not enough funds to withdraw");
+        IERC20(token).transferFrom(address(this), msg.sender, amount);
+        tokens[token] -= amount;        
+    }
+
+
+    // deposit and payable functionality
+    // deposit PANTHEON, SCALE, USDC
+    // withdraw PANTHEON, SCALE, USDC
+    // deposit ETH and withdraw ETH
     
 }

@@ -54,7 +54,7 @@ contract ArbitrageLPs is Test {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
-        bot.ScaleToPantheonToUsdc(10*1e18, 1*1e18, 1*1e6);
+        bot.ScaleToPantheonToUsdc(10*1e18, 0, 0);
     }
 
 
@@ -62,6 +62,40 @@ contract ArbitrageLPs is Test {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
-        bot.UsdcToPantheonToScale(10*1e6, 1*1e18);
+        bot.UsdcToPantheonToScale(10*1e6, 0);
     }
+
+    function testProfitFromMint() public {
+        deal(pantheonAddress, address(bot), 1000e18);
+        deal(scaleAddress, address(bot), 1000e18);
+        deal(usdcAddress, address(bot), 1000e6);
+        deal(address(bot), 2000e18);
+        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot))/ 1e18);
+        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot))/ 1e6);
+        console.log("Eth: ", address(bot).balance / 1e18);
+        vm.prank(address(bot));
+        bot.ProfitFromMint(1e18, 10e18);
+        //IPantheon(pantheonAddress).mint{value: 1e18}(address(bot));
+        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot))/ 1e18);
+        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot))/ 1e6);
+        console.log("Eth: ", address(bot).balance / 1e18);
+    }
+
+    function testProfitFromRedeem() public {
+        deal(pantheonAddress, address(bot), 10000e18);
+        deal(scaleAddress, address(bot), 1000e18);
+        deal(usdcAddress, address(bot), 10000000e6);
+        deal(address(bot), 20000e18);
+        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot))/ 1e18);
+        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot))/ 1e6);
+        console.log("Eth: ", address(bot).balance / 1e18);
+        vm.prank(address(bot));
+        bot.ProfitFromRedeem(10e6, 1000e18);
+        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot))/1e18);
+        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot))/1e6);
+        console.log("Eth: ", address(bot).balance/1e18);
+
+    }
+
+    
 }
