@@ -46,13 +46,10 @@ interface IRouter {
 
 
 contract ArbitrageBot is Ownable {
-    address public constant routerAddress = 0x2F87Bf58D5A9b2eFadE55Cdbd46153a0902be6FA;
-    address public constant usdcAddress = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
-    address public constant scaleAddress = 0x54016a4848a38f257B6E96331F7404073Fd9c32C;
-    address public constant scalePairAddress = 0x1948Bd09a8777023d4F15E29880930eD5bA0Daf2;
-    address public constant usdcPairAddress = 0x36E05b7AD2F93816068C831415560AE872024F27;
-    address public constant pantheonAddress = 0x993cd9c0512cfe335bc7eF0534236Ba760ea7526;
-    IRouter public router;
+    address public routerAddress = 0x2F87Bf58D5A9b2eFadE55Cdbd46153a0902be6FA;
+    address public usdcAddress = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
+    address public scaleAddress = 0x54016a4848a38f257B6E96331F7404073Fd9c32C;
+    address public pantheonAddress = 0x993cd9c0512cfe335bc7eF0534236Ba760ea7526;
     address public _owner;
 
     constructor(address initialOwner) Ownable(initialOwner) {
@@ -60,51 +57,47 @@ contract ArbitrageBot is Ownable {
     } 
 
 
-    function getScaleAmountWithRouter() public view returns(uint256){
-        uint amountScale = router.getAmountOut(1, pantheonAddress, scaleAddress, false);
-        return amountScale;
-    } 
+    function getUsdcWithPantheon(uint256 _pantheonAmount) public view returns (uint256) {
+        uint256  amountUsdcOut =  IRouter(routerAddress).getAmountOut(_pantheonAmount, pantheonAddress, usdcAddress, false);
+        return amountUsdcOut;
+    }
+    function getPantheonWithUsdc(uint256 _usdcAmount) public view returns(uint256) {
+        uint256 amountPantheonOut =  IRouter(routerAddress).getAmountOut(_usdcAmount, usdcAddress, pantheonAddress, false);
+        return amountPantheonOut;
+    }
 
-    function getUsdcAmountWithRouter() public view returns(uint256){
-        uint amountUsdc = router.getAmountOut(1, pantheonAddress, usdcAddress, false);
-        return amountUsdc;
-    } 
+    function getPantheonWithScale(uint256 _scaleAmount) public view returns(uint256){
+        uint256 amountPantheonOut =  IRouter(routerAddress).getAmountOut(_scaleAmount, scaleAddress, pantheonAddress, false);
+        return amountPantheonOut;
+    }
 
-	function swap(address _router, address _tokenIn, address _tokenOut, uint _amount) private {
+    function getScaleWithPantheon(uint256 _pantheonAmount) public view returns(uint256){
+        uint256 amountPantheonOut =  IRouter(routerAddress).getAmountOut(_pantheonAmount, pantheonAddress, scaleAddress, false);
+        return amountPantheonOut;
+    }
+
+    function swap(address _tokenIn,  address _tokenOut, uint256 _amount, uint256 _amountOutMin) private{
+		IERC20(_tokenIn).approve(routerAddress, _amount);
 		uint deadline = block.timestamp + 300;
-		IRouter(_router).swapExactTokensForTokensSimple(_amount, 1, _tokenIn, _tokenOut, false, address(this), deadline);
-	}
-
-    function dualPoolTradeIfScalePoolCheaper(address _router, uint256 _amount) external {
-        // uint startBalance = IERC20(scaleAddress).balanceOf(address(this));
-        IERC20(scaleAddress).approve(address(this), _amount);
-        IERC20(pantheonAddress).approve(address(this), _amount);
-        IERC20(scaleAddress).approve(scalePairAddress, _amount);
-        IERC20(pantheonAddress).approve(scalePairAddress, _amount);
-        IERC20(usdcAddress).approve(usdcPairAddress, _amount);
-        IERC20(usdcAddress).approve(usdcPairAddress, _amount);
-
-        uint token2InitialBalance = IERC20(pantheonAddress).balanceOf(address(this));
-        swap(_router, scaleAddress, pantheonAddress,_amount);
-        uint token2Balance = IERC20(pantheonAddress).balanceOf(address(this));
-        uint tradeableAmount = token2Balance - token2InitialBalance;
-        swap(_router, pantheonAddress, usdcAddress, tradeableAmount);
-        // uint endBalance = IERC20(usdcAddress).balanceOf(address(this));
-        // require(endBalance > startBalance, "Trade Reverted, No Profit Made");
+		uint256 [] memory amounts = IRouter(routerAddress).swapExactTokensForTokensSimple(_amount, _amountOutMin, _tokenIn, _tokenOut, false, address(this), deadline);
     }
-    function dualPoolTradeIfUsdcPoolCheaper(address _router, uint256 _amount) external {
-        IERC20(usdcAddress).approve(address(this), _amount);
-        IERC20(pantheonAddress).approve(address(this), _amount);
-        IERC20(usdcAddress).approve(usdcPairAddress, _amount);
-        IERC20(pantheonAddress).approve(usdcPairAddress, _amount);
-        IERC20(scaleAddress).approve(scalePairAddress, _amount);
-        IERC20(scaleAddress).approve(scalePairAddress, _amount);
-
-        uint token2InitialBalance = IERC20(pantheonAddress).balanceOf(address(this));
-        swap(_router, usdcAddress, pantheonAddress,_amount);
-        uint token2Balance = IERC20(pantheonAddress).balanceOf(address(this));
-        uint tradeableAmount = token2Balance - token2InitialBalance;
-        swap(_router, pantheonAddress, scaleAddress, tradeableAmount);
+    
+    function ScaleToPantheonToUsdc(uint256 _amount18, uint256 _amountOutMinDec18, uint256 _amountOutMinDec6) public {
+        uint256 pantheonInitialBalance = IERC20(pantheonAddress).balanceOf(address(this));
+        swap(scaleAddress, pantheonAddress, _amount18, _amountOutMinDec18);
+        uint256 pantheonBalance = IERC20(pantheonAddress).balanceOf(address(this));
+        uint256 pantheonTradeableAmount = pantheonBalance - pantheonInitialBalance;
+        swap(pantheonAddress, usdcAddress, pantheonTradeableAmount, _amountOutMinDec6);
+        uint256 usdcBalance = IERC20(usdcAddress).balanceOf(address(this));
     }
 
+    function UsdcToPantheonToScale(uint256 _amount6, uint256 _amountOutMinDec18) public {
+        uint256 pantheonInitialBalance = IERC20(pantheonAddress).balanceOf(address(this));
+        swap(usdcAddress, pantheonAddress, _amount6, _amountOutMinDec18);
+        uint256 pantheonBalance = IERC20(pantheonAddress).balanceOf(address(this));
+        uint256 pantheonTradeableAmount = pantheonBalance - pantheonInitialBalance;
+        swap(pantheonAddress, scaleAddress, pantheonTradeableAmount, _amountOutMinDec18);
+        uint256 scaleBalance = IERC20(scaleAddress).balanceOf(address(this));
+    }
+    
 }
