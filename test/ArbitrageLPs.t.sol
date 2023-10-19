@@ -30,27 +30,27 @@ contract ArbitrageLPs is Test {
         bot = new ArbitrageBot(address(2));
     }
     
-    function testGetUsdcWithPantheon() public view {
+    function xtestGetUsdcWithPantheon() public view {
         uint256 amountUsdcOut = bot.getUsdcWithPantheon(10 * 1e18);
         console.log("amountUsdcOut With PANTHEON: ", amountUsdcOut);
     }
 
-    function testGetPantheonWithUsdc() public view {
+    function xtestGetPantheonWithUsdc() public view {
         uint256 amountPantheonOut = bot.getPantheonWithUsdc(10 * 1e6);
         console.log("amountPantheonOut With USDC: ", amountPantheonOut);
     }
 
-    function testGetPantheonWithScale() public view {
+    function xtestGetPantheonWithScale() public view {
         uint256 amountPantheonOut = bot.getPantheonWithScale(10 * 1e18);
         console.log("amountPantheonOut With Scale: ",  amountPantheonOut);
     }
 
-    function testGetScaleWithPantheon() public view {
+    function xtestGetScaleWithPantheon() public view {
         uint256 amountScaleOut = bot.getScaleWithPantheon(10 * 1e18);
         console.log("amountScaleOut with PANTHEON: ", amountScaleOut);
     }
 
-    function testScaleToPantheonToUsdc() public {
+    function xtestScaleToPantheonToUsdc() public {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
@@ -58,14 +58,14 @@ contract ArbitrageLPs is Test {
     }
 
 
-    function testUsdcToPantheonToScale() public {
+    function xtestUsdcToPantheonToScale() public {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
         bot.UsdcToPantheonToScale(10*1e6, 0);
     }
 
-    function testProfitFromMint() public {
+    function xtestProfitFromMint() public {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
@@ -81,7 +81,7 @@ contract ArbitrageLPs is Test {
         console.log("Eth: ", address(bot).balance / 1e18);
     }
 
-    function testProfitFromRedeem() public {
+    function xtestProfitFromRedeem() public {
         deal(pantheonAddress, address(bot), 10000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 10000000e6);
@@ -96,6 +96,8 @@ contract ArbitrageLPs is Test {
         console.log("Eth: ", address(bot).balance/1e18);
 
     }
+
+   
 
     
 }

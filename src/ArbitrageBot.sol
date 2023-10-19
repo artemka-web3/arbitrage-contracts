@@ -60,6 +60,35 @@ contract ArbitrageBot is Ownable {
     } 
 
 
+    /*
+    GET TOKEN BALANCES
+    PANTHEON
+    SCALE
+    USDC
+    ETH 
+    */
+    function getEthBalance() public view returns(uint256){
+        uint256 balance = address(this).balance;
+        return balance;
+    }
+    function getPantheonBalance() public view returns(uint256){
+        uint256 balance = IERC20(pantheonAddress).balanceOf(address(this));
+        return balance;
+    }
+    function getScaleBalance() public view returns(uint256){
+        uint256 balance = IERC20(scaleAddress).balanceOf(address(this));
+        return balance;
+    }
+    function getUsdcBalance() public view returns(uint256){
+        uint256 balance = IERC20(usdcAddress).balanceOf(address(this));
+        return balance;
+    }
+
+    /* 
+    SWAP FUNCTIONALITY
+    get amount of different tokens
+    swap
+    */
     function getUsdcWithPantheon(uint256 _pantheonAmount) public view returns (uint256) {
         uint256  amountUsdcOut =  IRouter(routerAddress).getAmountOut(_pantheonAmount, pantheonAddress, usdcAddress, false);
         return amountUsdcOut;
@@ -82,7 +111,7 @@ contract ArbitrageBot is Ownable {
     function swap(address _tokenIn,  address _tokenOut, uint256 _amount, uint256 _amountOutMin) private {
 		IERC20(_tokenIn).approve(routerAddress, _amount);
 		uint deadline = block.timestamp + 300;
-		uint256 [] memory amounts = IRouter(routerAddress).swapExactTokensForTokensSimple(_amount, _amountOutMin, _tokenIn, _tokenOut, false, address(this), deadline);
+		IRouter(routerAddress).swapExactTokensForTokensSimple(_amount, _amountOutMin, _tokenIn, _tokenOut, false, address(this), deadline);
     }
     
     function ScaleToPantheonToUsdc(uint256 _amount18, uint256 _amountOutMinDec18, uint256 _amountOutMinDec6) public {
@@ -91,7 +120,6 @@ contract ArbitrageBot is Ownable {
         uint256 pantheonBalance = IERC20(pantheonAddress).balanceOf(address(this));
         uint256 pantheonTradeableAmount = pantheonBalance - pantheonInitialBalance;
         swap(pantheonAddress, usdcAddress, pantheonTradeableAmount, _amountOutMinDec6);
-        uint256 usdcBalance = IERC20(usdcAddress).balanceOf(address(this));
     }
 
     function UsdcToPantheonToScale(uint256 _amount6, uint256 _amountOutMinDec18) public {
@@ -100,7 +128,6 @@ contract ArbitrageBot is Ownable {
         uint256 pantheonBalance = IERC20(pantheonAddress).balanceOf(address(this));
         uint256 pantheonTradeableAmount = pantheonBalance - pantheonInitialBalance;
         swap(pantheonAddress, scaleAddress, pantheonTradeableAmount, _amountOutMinDec18);
-        uint256 scaleBalance = IERC20(scaleAddress).balanceOf(address(this));
     }
 
     // Arbitrage the Pantheon - USDC pool with the Pantheon contract (mint and redeem),
@@ -119,6 +146,13 @@ contract ArbitrageBot is Ownable {
         IPantheon(pantheonAddress).redeem(pantheonAmount);
     }
 
+
+
+    /*
+    MANAGE BALANCES
+    OF DIFFERENT TOKENS
+    */
+
     receive() external payable {}
 
     function depositTokens(address token, uint256 amount) external onlyOwner {
@@ -136,10 +170,11 @@ contract ArbitrageBot is Ownable {
         tokens[token] -= amount;        
     }
 
-
-    // deposit and payable functionality
-    // deposit PANTHEON, SCALE, USDC
-    // withdraw PANTHEON, SCALE, USDC
-    // deposit ETH and withdraw ETH
-    
+    function withdrawEth(uint256 amount) external onlyOwner(){
+        uint256 balance = address(this).balance;
+        require(balance > amount, "No Ether to withdraw");
+        (bool success, ) = payable(_owner).call{value: amount}("");
+        require(success, "Withdrawal failed");
+    }
+   
 }
