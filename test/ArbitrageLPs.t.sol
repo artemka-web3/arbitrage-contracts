@@ -30,27 +30,27 @@ contract ArbitrageLPs is Test {
         bot = new ArbitrageBot(address(2));
     }
     
-    function xtestGetUsdcWithPantheon() public view {
+    function testGetUsdcWithPantheon() public view {
         uint256 amountUsdcOut = bot.getUsdcWithPantheon(10 * 1e18);
         console.log("amountUsdcOut With PANTHEON: ", amountUsdcOut);
     }
 
-    function xtestGetPantheonWithUsdc() public view {
+    function testGetPantheonWithUsdc() public view {
         uint256 amountPantheonOut = bot.getPantheonWithUsdc(10 * 1e6);
         console.log("amountPantheonOut With USDC: ", amountPantheonOut);
     }
 
-    function xtestGetPantheonWithScale() public view {
+    function testGetPantheonWithScale() public view {
         uint256 amountPantheonOut = bot.getPantheonWithScale(10 * 1e18);
         console.log("amountPantheonOut With Scale: ",  amountPantheonOut);
     }
 
-    function xtestGetScaleWithPantheon() public view {
+    function testGetScaleWithPantheon() public view {
         uint256 amountScaleOut = bot.getScaleWithPantheon(10 * 1e18);
         console.log("amountScaleOut with PANTHEON: ", amountScaleOut);
     }
 
-    function xtestScaleToPantheonToUsdc() public {
+    function testScaleToPantheonToUsdc() public {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
@@ -58,14 +58,14 @@ contract ArbitrageLPs is Test {
     }
 
 
-    function xtestUsdcToPantheonToScale() public {
+    function testUsdcToPantheonToScale() public {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
         bot.UsdcToPantheonToScale(10*1e6, 0);
     }
 
-    function xtestProfitFromMint() public {
+    function testProfitFromMint() public {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
