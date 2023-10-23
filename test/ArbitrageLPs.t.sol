@@ -67,14 +67,14 @@ contract ArbitrageLPs is Test {
         deal(pantheonAddress, address(bot), 1000e18);
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
-        console.log("Pantheon before swap 10 USDC: ", IERC20(pantheonAddress).balanceOf(address(bot)));
+        console.log("Pantheon before swap 10 USDC: ", IERC20(pantheonAddress).balanceOf(address(bot)) );
         console.log("SCALE before swap 10 USDC: ", IERC20(scaleAddress).balanceOf(address(bot)));
         console.log("USDC before swap 10 USDC: ", IERC20(usdcAddress).balanceOf(address(bot)));
         bot.UsdcToPantheonToScale(10*1e6, 0);
 
         console.log("Pantheon after swap 10 USDC: ", IERC20(pantheonAddress).balanceOf(address(bot)));
-        console.log("SCALE after swap 10 USDC: ", IERC20(scaleAddress).balanceOf(address(bot)));
-        console.log("USDC after swap 10 USDC: ", IERC20(usdcAddress).balanceOf(address(bot)));
+        console.log("SCALE after swap 10 USDC: ", IERC20(scaleAddress).balanceOf(address(bot)) );
+        console.log("USDC after swap 10 USDC: ", IERC20(usdcAddress).balanceOf(address(bot)) / 1e16);
     }
 
     // 743688 gas
@@ -83,15 +83,15 @@ contract ArbitrageLPs is Test {
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 1000e6);
         deal(address(bot), 2000e18);
-        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot))/ 1e18);
-        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot))/ 1e6);
-        console.log("Eth: ", address(bot).balance / 1e18);
+        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot)));
+        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot)));
+        console.log("Eth: ", address(bot).balance );
         vm.prank(address(bot));
         bot.ProfitFromMint(1e18, 1000e18);
         //IPantheon(pantheonAddress).mint{value: 1e18}(address(bot));
-        console.log("pantheonToken after minting 1000 pantheon and swap it: ", IERC20(pantheonAddress).balanceOf(address(bot))/ 1e18);
-        console.log("usdc after minting 1000 pantheon and swap it: ", IERC20(usdcAddress).balanceOf(address(bot))/ 1e6);
-        console.log("Eth after minting 1000 pantheon and swap it: ", address(bot).balance / 1e18);
+        console.log("pantheonToken after minting pantheon with 1eth and swap it: ", IERC20(pantheonAddress).balanceOf(address(bot)));
+        console.log("usdc after minting pantheon with 1eth and swap it: ", IERC20(usdcAddress).balanceOf(address(bot)));
+        console.log("Eth after minting pantheon with 1eth and swap it: ", address(bot).balance );
     }
 
     // 746748
@@ -100,25 +100,25 @@ contract ArbitrageLPs is Test {
         deal(scaleAddress, address(bot), 1000e18);
         deal(usdcAddress, address(bot), 10000000e6);
         deal(address(bot), 20000e18);
-        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot))/ 1e18);
-        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot))/ 1e6);
-        console.log("Eth: ", address(bot).balance / 1e18);
+        console.log("pantheonToken: ", IERC20(pantheonAddress).balanceOf(address(bot)));
+        console.log("usdc: ", IERC20(usdcAddress).balanceOf(address(bot)));
+        console.log("Eth: ", address(bot).balance );
         vm.prank(address(bot));
         bot.ProfitFromRedeem(10e6, 7e18);
-        console.log("pantheonToken after swapping 10 usdc and swap 7 pantheon: ", IERC20(pantheonAddress).balanceOf(address(bot))/1e18);
-        console.log("usdc after swapping 10 usdc and swap 7 pantheon: ", IERC20(usdcAddress).balanceOf(address(bot))/1e6);
-        console.log("Eth after swapping 10 usdc and swap 7 pantheon: ", address(bot).balance/1e18);
+        console.log("pantheonToken after swapping 10 usdc and redeem ~8(7) pantheon: ", IERC20(pantheonAddress).balanceOf(address(bot)));
+        console.log("usdc after swapping 10 usdc and redeem ~8(7) pantheon: ", IERC20(usdcAddress).balanceOf(address(bot)));
+        console.log("Eth after swapping 10 usdc and redeem ~8(7) pantheon: ", address(bot).balance);
     }
 
     function testDeposit() public {
         deal(pantheonAddress, address(2), 10000e18);
         vm.startPrank(address(2));
         IERC20(pantheonAddress).approve(address(bot), 10*1e18);
-        console.log('bot pantheon before: ', IERC20(pantheonAddress).balanceOf(address(bot)) / 1e18);
-        console.log('user pantheon before: ', IERC20(pantheonAddress).balanceOf(address(2)) / 1e18);
+        console.log('bot pantheon before: ', IERC20(pantheonAddress).balanceOf(address(bot)) );
+        console.log('user pantheon before: ', IERC20(pantheonAddress).balanceOf(address(2)) );
         bot.depositTokens(pantheonAddress, 5*1e18);
-        console.log('bot pantheon after depositing 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(bot)) / 1e18);
-        console.log('user pantheon after depositing 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(2)) / 1e18);
+        console.log('bot pantheon after depositing 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(bot)) );
+        console.log('user pantheon after depositing 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(2)) );
         vm.stopPrank();
     }
 
@@ -127,11 +127,11 @@ contract ArbitrageLPs is Test {
         deal(pantheonAddress, address(bot), 10000e18);
 
         vm.startPrank(address(2));
-        console.log('bot pantheon before: ', IERC20(pantheonAddress).balanceOf(address(bot)) / 1e18);
-        console.log('user pantheon before: ', IERC20(pantheonAddress).balanceOf(address(2)) / 1e18);
+        console.log('bot pantheon before: ', IERC20(pantheonAddress).balanceOf(address(bot)) );
+        console.log('user pantheon before: ', IERC20(pantheonAddress).balanceOf(address(2)) );
         bot.withdrawTokens(pantheonAddress, 5*1e18);
-        console.log('bot pantheon after withdraw 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(bot)) / 1e18);
-        console.log('user pantheon after withdraw 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(2)) / 1e18);
+        console.log('bot pantheon after withdraw 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(bot)) );
+        console.log('user pantheon after withdraw 5 pantheons: ', IERC20(pantheonAddress).balanceOf(address(2)) );
         vm.stopPrank();
 
     }
@@ -141,7 +141,7 @@ contract ArbitrageLPs is Test {
         vm.prank(address(2));
         bot.withdrawEth(1e18);
 
-        console.log("balance  after  withdrawing 1 ETH:", address(2).balance / 1e18);
+        console.log("balance  after  withdrawing 1 ETH:", address(2).balance );
     }
    
 
