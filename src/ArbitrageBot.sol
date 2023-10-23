@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 
 interface IPair {
@@ -53,7 +53,7 @@ contract ArbitrageBot is Ownable {
     address public scaleAddress = 0x54016a4848a38f257B6E96331F7404073Fd9c32C;
     address public pantheonAddress = 0x993cd9c0512cfe335bc7eF0534236Ba760ea7526;
     address public _owner;
-    mapping (address => uint256) public tokens;
+    // mapping (address => uint256) public tokens;
 
     constructor(address initialOwner) Ownable(initialOwner) {
         _owner = initialOwner;
@@ -159,15 +159,14 @@ contract ArbitrageBot is Ownable {
         require(token != address(0), "Invalid token address");
         require(amount > 0, "Amount must be greater than zero");
         IERC20(token).transferFrom(msg.sender, address(this), amount);
-        tokens[token] += amount;        
     }
 
     function withdrawTokens(address token, uint256 amount) external onlyOwner{
         require(token != address(0), "Invalid token address");
         require(amount > 0, "Amount must be greater than zero");
-        require(tokens[token] > amount, "Not enough funds to withdraw");
+        require(IERC20(token).balanceOf(address(this)) > amount, "Not enough funds to withdraw");
+        IERC20(pantheonAddress).approve(address(this), amount);
         IERC20(token).transferFrom(address(this), msg.sender, amount);
-        tokens[token] -= amount;        
     }
 
     function withdrawEth(uint256 amount) external onlyOwner(){

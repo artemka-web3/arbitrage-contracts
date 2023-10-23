@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "../src/ArbitrageBot.sol";
 
+// forge script script/ArbitrageBot.s.sol:ArbitrageBotScript --rpc-url https://base-mainnet.g.alchemy.com/v2/00sZXJLaUPCy6ybR34fAvRrCDDNQ6Uf_ --broadcast --verify -vvvv
+
 
 contract ArbitrageBotScript is Script{
     function setUp() public {
@@ -18,3 +20,4 @@ contract ArbitrageBotScript is Script{
 
     }
 }
+
